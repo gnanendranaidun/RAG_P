@@ -1,0 +1,114 @@
+{
+  "video_path": "/Users/gnanendranaidun/Desktop/RAG_P/video_rag/test_video.mp4",
+  "video_name": "test_video",
+  "asr": [],
+  "ocr": [
+    {
+      "timestamp": 0.0,
+      "text": [
+        "Hello",
+        "World"
+      ]
+    },
+    {
+      "timestamp": 1.0,
+      "text": [
+        "Hello",
+        "World"
+      ]
+    },
+    {
+      "timestamp": 2.0,
+      "text": [
+        "Video",
+        "RAG",
+        "Test"
+      ]
+    },
+    {
+      "timestamp": 3.0,
+      "text": [
+        "Video",
+        "RAG",
+        "Test"
+      ]
+    }
+  ],
+  "det": [
+    {
+      "timestamp": 0.0,
+      "objects": [
+        {
+          "class": "frisbee",
+          "confidence": 0.6021516919136047,
+          "box": [
+            270.24847412109375,
+            191.1644287109375,
+            371.10052490234375,
+            291.62908935546875
+          ]
+        }
+      ]
+    },
+    {
+      "timestamp": 1.0,
+      "objects": [
+        {
+          "class": "frisbee",
+          "confidence": 0.6042024493217468,
+          "box": [
+            270.3804931640625,
+            191.05447387695312,
+            370.9422607421875,
+            291.64404296875
+          ]
+        }
+      ]
+    },
+    {
+      "timestamp": 2.0,
+      "objects": [
+        {
+          "class": "frisbee",
+          "confidence": 0.3861675560474396,
+          "box": [
+            270.31219482421875,
+            191.1468505859375,
+            370.8836669921875,
+            291.55865478515625
+          ]
+        }
+      ]
+    },
+    {
+      "timestamp": 3.0,
+      "objects": [
+        {
+          "class": "frisbee",
+          "confidence": 0.3738727569580078,
+          "box": [
+            270.30010986328125,
+            191.1739501953125,
+            370.87335205078125,
+            291.48333740234375
+          ]
+        }
+      ]
+    },
+    {
+      "timestamp": 4.0,
+      "objects": [
+        {
+          "class": "frisbee",
+          "confidence": 0.645075261592865,
+          "box": [
+            270.09332275390625,
+            191.16213989257812,
+            371.25775146484375,
+            291.4624938964844
+          ]
+        }
+      ]
+    }
+  ]
+}

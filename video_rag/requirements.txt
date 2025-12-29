@@ -1,0 +1,12 @@
+
+torch
+transformers
+accelerate
+openai-whisper
+easyocr
+ultralytics
+sentence-transformers
+faiss-cpu
+opencv-python
+numpy
+pillow
