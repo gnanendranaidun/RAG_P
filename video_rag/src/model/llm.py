@@ -55,9 +55,12 @@ class LLMInterface:
         
         if self.mode == "video_llava" and image_input is not None:
             # Multi-modal generation
-            inputs = self.processor(text=prompt, images=image_input, return_tensors="pt").to(self.device)
-            out = self.model.generate(**inputs, max_new_tokens=200)
-            return self.processor.batch_decode(out, skip_special_tokens=True)[0]
+            prompt_text = f"USER: <image>\n{prompt}\nASSISTANT:"
+            inputs = self.processor(text=prompt_text, images=image_input, return_tensors="pt").to(self.device)
+            
+            # Generate
+            out = self.model.generate(**inputs, max_new_tokens=200, do_sample=False)
+            return self.processor.batch_decode(out, skip_special_tokens=True)[0].split("ASSISTANT:")[-1].strip()
             
         else:
             # Text-only RAG generation

@@ -45,6 +45,7 @@ class VideoIndexer:
                         "text": text,
                         "timestamp": segment["start"],
                         "end": segment["end"],
+                        "video_path": video_path,
                         "video_name": video_name
                     })
         
@@ -58,7 +59,9 @@ class VideoIndexer:
                     temp_meta.append({
                         "source": "OCR",
                         "text": joined_text,
+                        "text": joined_text,
                         "timestamp": item["timestamp"],
+                        "video_path": video_path,
                         "video_name": video_name
                     })
                     
@@ -74,6 +77,7 @@ class VideoIndexer:
                         "source": "DET",
                         "text": desc,
                         "timestamp": item["timestamp"],
+                        "video_path": video_path,
                         "video_name": video_name,
                         "objects": objects
                     })
