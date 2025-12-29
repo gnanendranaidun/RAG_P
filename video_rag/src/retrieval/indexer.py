@@ -68,18 +68,29 @@ class VideoIndexer:
         # 3. Index DET
         if "det" in data and data["det"]:
             for item in data["det"]:
-                # Create a description: "Detected person, car, dog."
-                objects = [obj["class"] for obj in item["objects"]]
-                desc = "Detected objects: " + ", ".join(objects)
-                if len(objects) > 0:
-                    texts_to_encode.append(desc)
+                # Create a description: "Detected objects: ..." AND "Object Counting: ..."
+                objects_list = [obj["class"] for obj in item["objects"]]
+                desc_obj = "Detected objects: " + ", ".join(objects_list)
+                
+                # Format counts as per Video-RAG paper
+                # e.g. "Object Counting: - apples: 5 - candles: 5"
+                counts = item.get("counts", {})
+                count_strs = [f"{cls}: {cnt}" for cls, cnt in counts.items()]
+                desc_counts = "Object Counting: " + ", ".join(count_strs)
+                
+                # Combine for the text to be indexed/retrieved
+                full_text = f"{desc_counts}. {desc_obj}"
+                
+                if len(objects_list) > 0:
+                    texts_to_encode.append(full_text)
                     temp_meta.append({
                         "source": "DET",
-                        "text": desc,
+                        "text": full_text,
                         "timestamp": item["timestamp"],
                         "video_path": video_path,
                         "video_name": video_name,
-                        "objects": objects
+                        "objects": objects_list,
+                        "counts": counts
                     })
 
         if not texts_to_encode:

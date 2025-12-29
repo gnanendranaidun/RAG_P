@@ -44,9 +44,16 @@ class DetExtractor:
                         })
                 
                 if objects:
+                    # Count objects per class
+                    counts = {}
+                    for obj in objects:
+                        cls = obj["class"]
+                        counts[cls] = counts.get(cls, 0) + 1
+                        
                     results.append({
                         "timestamp": timestamp,
-                        "objects": objects
+                        "objects": objects, # Keep detailed objects if needed later
+                        "counts": counts
                     })
             
             frame_idx += 1
