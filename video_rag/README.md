@@ -49,3 +49,47 @@ python scripts/ingest_video.py --video test_video.mp4 --output db
 # Query
 python run_inference.py --db db/test_video --query "What objects are detected?"
 ```
+
+## How it Works
+
+The following diagram illustrates the flow when running an inference query:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI as run_inference.py
+    participant Pipeline as VideoRAGPipeline
+    participant Indexer as VideoIndexer (FAISS)
+    participant Model as LLMInterface (DistilGPT2/T5)
+
+    User->>CLI: python run_inference.py --query "..."
+    
+    rect rgb(240, 240, 240)
+    Note over CLI, Model: 1. Initialization Phase
+    CLI->>Pipeline: Initialize(db_path, mode)
+    Pipeline->>Indexer: load()
+    Indexer-->>Pipeline: Load faiss.index & metadata.pkl
+    Pipeline->>Model: Initialize(text_model)
+    Model-->>Pipeline: Load Model & Tokenizer
+    end
+
+    rect rgb(230, 240, 255)
+    Note over CLI, Model: 2. Execution Phase
+    CLI->>Pipeline: run(query)
+    
+    Note right of Pipeline: Retrieval
+    Pipeline->>Indexer: search(query, top_k=5)
+    Indexer->>Indexer: Encode Query (SentenceTransformer)
+    Indexer->>Indexer: Vector Search (FAISS)
+    Indexer-->>Pipeline: Return Top Relevant Contexts (ASR/OCR)
+    
+    Note right of Pipeline: Generation
+    Pipeline->>Pipeline: Create Prompt (Context + Question)
+    Pipeline->>Model: generate(prompt)
+    Model->>Model: Tokenize -> Inference -> Decode
+    Model-->>Pipeline: Return Answer Text
+    end
+
+    Pipeline-->>CLI: Final Answer
+    CLI-->>User: Print Output
+```
