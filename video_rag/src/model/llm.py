@@ -31,6 +31,19 @@ class LLMInterface:
             except Exception as e:
                 print(f"Failed to load LLaVA model: {e}")
                 self.mode = "text_fallback"
+
+        elif mode == "video_moondream":
+            print("Loading Moondream2 (Small Efficient LVLM)...")
+            try:
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    "vikhyatk/moondream2", 
+                    trust_remote_code=True,
+                    torch_dtype=torch.float16 if self.device != "cpu" else torch.float32
+                ).to(self.device)
+                self.tokenizer = AutoTokenizer.from_pretrained("vikhyatk/moondream2")
+            except Exception as e:
+                print(f"Failed to load Moondream2: {e}")
+                self.mode = "text_fallback"
         
         if self.mode == "text" or self.mode == "text_fallback":
             # Revert to distilgpt2 as requested (no download) but optimize generation
@@ -61,6 +74,19 @@ class LLMInterface:
             # Generate
             out = self.model.generate(**inputs, max_new_tokens=200, do_sample=False)
             return self.processor.batch_decode(out, skip_special_tokens=True)[0].split("ASSISTANT:")[-1].strip()
+
+        elif self.mode == "video_moondream" and image_input is not None:
+            # Moondream generation
+            # It prefers: model.encode_image(image) -> model.answer(enc, prompt, tokenizer)
+            try:
+                enc_image = self.model.encode_image(image_input)
+                # Combine context and prompt for Moondream
+                # Moondream context instruction works best if embedded in the prompt
+                md_prompt = f"{context_text}\nQuestion: {prompt}\nAnswer:" 
+                answer = self.model.answer(enc_image, md_prompt, self.tokenizer)
+                return answer
+            except Exception as e:
+                return f"Error in Moondream generation: {e}"
             
         else:
             # Text-only RAG generation
