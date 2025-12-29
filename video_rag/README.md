@@ -27,34 +27,39 @@ An implementation of Retrieval-Augmented Generation for Video, based on the rese
 
 ### 1. Ingest Video
 Process a video to extract text and build the index.
-```bash
-python scripts/ingest_video.py --video path/to/video.mp4 --output db
+``` python 
+scripts/ingest_video.py --video path/to/video.mp4 --output db
 ```
 
 ### 2. Query
 Ask a question about the video.
-```bash
-python run_inference.py --db db/video_name --query "What text is shown on the sign?"
+```python 
+run_inference.py --db db/video_name --query "What text is shown on the sign?"
 ```
 
 ## Testing
 To run a quick verification with a simulated video:
-```bash
+
 # Generate dummy video
-python scripts/create_dummy_video.py
+``` python 
+scripts/create_dummy_video.py
+```
+
 
 # Ingest
-python scripts/ingest_video.py --video test_video.mp4 --output db
+``` python 
+scripts/ingest_video.py --video test_video.mp4 --output db
+```
 
 # Query
-python run_inference.py --db db/test_video --query "What objects are detected?"
+``` python run_inference.py --db db/test_video --query "What objects are detected?"
 ```
 
 ## How it Works
 
 The following diagram illustrates the flow when running an inference query:
 
-```mermaid
+``` mermaid
 sequenceDiagram
     participant User
     participant CLI as run_inference.py
