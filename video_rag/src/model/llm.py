@@ -5,7 +5,15 @@ from transformers import AutoProcessor, LlavaForConditionalGeneration, AutoModel
 class LLMInterface:
     def __init__(self, model_path="llava-hf/llava-1.5-7b-hf", mode="text", device=None):
         self.mode = mode
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        if device:
+            self.device = device
+        elif torch.cuda.is_available():
+            self.device = "cuda"
+        elif torch.backends.mps.is_available():
+            self.device = "mps"
+        else:
+            self.device = "cpu"
+            
         self.model_path = model_path
         
         print(f"Initializing LLM in mode='{mode}' on {self.device}...")
@@ -17,7 +25,7 @@ class LLMInterface:
                 self.processor = AutoProcessor.from_pretrained(model_path)
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     model_path, 
-                    torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+                    torch_dtype=torch.float16 if self.device != "cpu" else torch.float32,
                     low_cpu_mem_usage=True
                 ).to(self.device)
             except Exception as e:
@@ -25,9 +33,8 @@ class LLMInterface:
                 self.mode = "text_fallback"
         
         if self.mode == "text" or self.mode == "text_fallback":
-            # Use specific small model for text-only RAG (Context + Question)
-            # Using distilgpt2 for speed/memory reliability
-            text_model = "google/flan-t5-base" 
+            # Revert to distilgpt2 as requested (no download) but optimize generation
+            text_model = "distilgpt2" 
             print(f"Loading text model {text_model}...")
             self.tokenizer = AutoTokenizer.from_pretrained(text_model)
             if self.tokenizer.pad_token is None:
@@ -43,7 +50,8 @@ class LLMInterface:
         """
         Generates answer.
         """
-        full_prompt = f"Context:\n{context_text}\n\nQuestion: {prompt}\nAnswer:"
+        # Improved prompt for CausalLM
+        full_prompt = f"Context:\n{context_text}\n\nBased on the above context, answer the question.\nQuestion: {prompt}\nAnswer:"
         
         if self.mode == "video_llava" and image_input is not None:
             # Multi-modal generation
@@ -54,8 +62,26 @@ class LLMInterface:
         else:
             # Text-only RAG generation
             inputs = self.tokenizer(full_prompt, return_tensors="pt").to(self.device)
-            out = self.model.generate(**inputs, max_new_tokens=200)
-            return self.tokenizer.decode(out[0], skip_special_tokens=True)
+            
+            # Better generation params to avoid repetition
+            out = self.model.generate(
+                **inputs, 
+                max_new_tokens=50,
+                pad_token_id=self.tokenizer.eos_token_id,
+                repetition_penalty=1.2,
+                do_sample=False # Greedy decoding for determinism
+            )
+            
+            generated_text = self.tokenizer.decode(out[0], skip_special_tokens=True)
+            
+            # Post-processing to extract just the answer
+            try:
+                answer = generated_text.split("Answer:")[-1].strip()
+                # If it continues to generate a new Question:, cut it off
+                answer = answer.split("Question:")[0].strip()
+                return answer
+            except:
+                return generated_text
 
 if __name__ == "__main__":
     llm = LLMInterface(mode="text")
